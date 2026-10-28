@@ -1168,6 +1168,12 @@ body {
     transition: border-color 0.3s ease;
 }
 
+textarea.matching-select {
+    cursor: text;
+    resize: vertical;
+    font-family: inherit;
+}
+
 .matching-select:focus {
     outline: none;
     border-color: var(--deep-rose);
@@ -1312,6 +1318,179 @@ body {
     color: var(--text-light);
     font-size: 1.1rem;
     padding: 2rem;
+}
+
+.matching-score-breakdown {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: var(--warm-cream);
+    border-radius: 8px;
+}
+
+/* How It Works Section */
+.how-it-works {
+    background-color: var(--white);
+    padding: 80px 20px;
+}
+
+.steps-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.step {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--warm-cream);
+    border-radius: 15px;
+    border: 2px solid var(--light-gold);
+}
+
+.step-number {
+    width: 60px;
+    height: 60px;
+    background-color: var(--deep-rose);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 auto 1rem;
+}
+
+.step h3 {
+    color: var(--dark-brown);
+    margin-bottom: 0.5rem;
+}
+
+.step p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* Demo Mentors Section */
+.demo-mentors-section {
+    background-color: var(--soft-pink);
+    padding: 80px 20px;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+.demo-mentors-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+}
+
+/* Meet Our Mentors Section */
+.meet-mentors-section {
+    background-color: var(--soft-pink);
+    padding: 80px 20px;
+}
+
+.mentors-directory-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.demo-mentor-card {
+    background-color: var(--white);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px var(--shadow);
+    border: 2px solid var(--light-gold);
+    text-align: center;
+}
+
+.demo-mentor-avatar {
+    width: 80px;
+    height: 80px;
+    background-color: var(--soft-pink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1rem;
+    border: 2px solid var(--light-gold);
+}
+
+.demo-mentor-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--dark-brown);
+    margin-bottom: 0.5rem;
+}
+
+.demo-mentor-expertise {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.demo-mentor-languages {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.demo-mentor-label {
+    display: inline-block;
+    background-color: var(--warm-cream);
+    color: var(--text-brown);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.demo-cta {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+/* Mission Section */
+.mission-section {
+    background-color: var(--deep-rose);
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.mission-section h2 {
+    color: var(--white);
+    margin-bottom: 1.5rem;
+}
+
+.mission-text {
+    color: var(--white);
+    font-size: 1.2rem;
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Messaging Modal */
+.message-modal-content {
+    max-width: 600px;
 }
 
 /* About Section */

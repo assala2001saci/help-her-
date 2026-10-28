@@ -14,8 +14,6 @@
             <ul class="nav-menu">
                 <li><a href="#home" class="nav-link">Home</a></li>
                 <li><a href="#find-mentor" class="nav-link">Find a Mentor</a></li>
-                <li><a href="#mentor-matching" class="nav-link">Mentor Matching</a></li>
-                <li><a href="#learn" class="nav-link">Learn</a></li>
                 <li><a href="#about" class="nav-link">About</a></li>
             </ul>
             <div class="hamburger">
@@ -29,114 +27,44 @@
     <!-- Hero Section -->
     <section id="home" class="hero">
         <div class="hero-content">
-            <h1 class="hero-title">Find Your Mentor Today</h1>
-            <p class="hero-subtitle">Connect with women mentors in technology who can guide your learning journey</p>
-            <button class="cta-button" id="startButton">Find a Mentor</button>
+            <h1 class="hero-title">Connect with Women Mentors in Technology</h1>
+            <p class="hero-subtitle">Get personalized guidance from women who understand your journey. Find your mentor today.</p>
+            <button class="cta-button" id="startButton">Find Your Mentor</button>
         </div>
     </section>
 
-    <!-- Introduction Section -->
-    <section class="intro">
+    <!-- How It Works Section -->
+    <section class="how-it-works">
         <div class="container">
-            <h2>Welcome to HELP HER</h2>
-            <p class="intro-text">
-                HELP HER is an AI-powered digital empowerment platform designed specifically for women and girls. 
-                We believe that every woman deserves the opportunity to build digital skills, overcome technology fears, 
-                and gain the confidence to thrive in the digital world. Our mission is to make technology accessible, 
-                understandable, and empowering for everyone.
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Choose What You Want to Learn</h3>
+                    <p>Select your topic, experience level, and preferred language.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Discover Your Mentor</h3>
+                    <p>We'll match you with a mentor who fits your needs and preferences.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Send a Message</h3>
+                    <p>Introduce yourself and start your mentoring journey.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="mission-section">
+        <div class="container">
+            <h2 class="section-title">Our Mission</h2>
+            <p class="mission-text">
+                Girls who receive support today become the mentors of tomorrow. 
+                HELP HER creates a cycle of empowerment where every woman can learn, grow, and eventually give back to the next generation.
             </p>
-        </div>
-    </section>
-
-    <!-- Learning Cards Section -->
-    <section id="learn" class="learning-section">
-        <div class="container">
-            <h2 class="section-title">Start Learning Today</h2>
-            <div class="cards-container">
-                <div class="learning-card">
-                    <div class="card-icon">💻</div>
-                    <h3>Digital Basics</h3>
-                    <p>Learn fundamental computer skills, internet navigation, and essential digital tools to build your foundation.</p>
-                    <button class="card-button">Begin Learning</button>
-                </div>
-                <div class="learning-card">
-                    <div class="card-icon">🤖</div>
-                    <h3>AI for Beginners</h3>
-                    <p>Discover the world of Artificial Intelligence in simple terms. Understand how AI can help you in everyday life.</p>
-                    <button class="card-button">Begin Learning</button>
-                </div>
-                <div class="learning-card">
-                    <div class="card-icon">🔒</div>
-                    <h3>Online Safety</h3>
-                    <p>Protect yourself online with essential cybersecurity knowledge. Learn to stay safe while exploring the digital world.</p>
-                    <button class="card-button">Begin Learning</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Find a Mentor Section -->
-    <section id="find-mentor" class="mentor-section">
-        <div class="container">
-            <h2 class="section-title">Find a Mentor</h2>
-            <p class="mentor-intro">
-                Connect with women mentors in technology who can guide you on your learning journey.
-                All mentors have opted in to help and are passionate about supporting women in tech.
-            </p>
-
-            <!-- Filter Form -->
-            <div class="filter-container">
-                <h3>Filter Mentors</h3>
-                <div class="filter-form">
-                    <div class="filter-group">
-                        <label for="technologyFilter">Technology Field</label>
-                        <select id="technologyFilter" class="filter-select">
-                            <option value="">All Fields</option>
-                            <option value="Web Development">Web Development</option>
-                            <option value="Python">Python</option>
-                            <option value="Artificial Intelligence">Artificial Intelligence</option>
-                            <option value="Mobile Development">Mobile Development</option>
-                            <option value="Cloud Computing">Cloud Computing</option>
-                            <option value="UI/UX Design">UI/UX Design</option>
-                            <option value="Cybersecurity">Cybersecurity</option>
-                            <option value="Backend Development">Backend Development</option>
-                            <option value="Software Testing">Software Testing</option>
-                            <option value="Game Development">Game Development</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="languageFilter">Language</label>
-                        <select id="languageFilter" class="filter-select">
-                            <option value="">All Languages</option>
-                            <option value="English">English</option>
-                            <option value="Spanish">Spanish</option>
-                            <option value="Hindi">Hindi</option>
-                            <option value="Arabic">Arabic</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="experienceFilter">Experience Level</label>
-                        <select id="experienceFilter" class="filter-select">
-                            <option value="">All Levels</option>
-                            <option value="beginner">Beginner</option>
-                            <option value="intermediate">Intermediate</option>
-                            <option value="senior">Senior</option>
-                        </select>
-                    </div>
-                    <button id="searchMentors" class="search-button">Search Mentors</button>
-                </div>
-            </div>
-
-            <!-- Demo Notice -->
-            <div class="demo-notice">
-                <strong>📌 Demo Mode:</strong> These are fictional mentor profiles for demonstration purposes.
-                No real requests will be sent.
-            </div>
-
-            <!-- Mentor Cards Container -->
-            <div id="mentorCards" class="mentor-cards-container">
-                <div class="loading-mentors">Loading mentors...</div>
-            </div>
         </div>
     </section>
 
@@ -150,12 +78,22 @@
         </div>
     </div>
 
-    <!-- Mentor Matching Agent Section -->
-    <section id="mentor-matching" class="mentor-matching-section">
+    <!-- Messaging Modal -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content message-modal-content">
+            <span class="close-modal" id="closeMessageModal">&times;</span>
+            <div id="messageModalBody">
+                <!-- Messaging content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Find Your Mentor Section -->
+    <section id="find-mentor" class="mentor-matching-section">
         <div class="container">
-            <h2 class="section-title">Mentor Matching Agent</h2>
+            <h2 class="section-title">Find Your Mentor</h2>
             <p class="mentor-matching-intro">
-                Let me help you find the perfect mentor! Answer a few questions and I'll recommend mentors who match your needs.
+                Select your preferences and we'll match you with the best mentors based on compatibility.
             </p>
 
             <!-- Matching Form -->
@@ -166,8 +104,9 @@
                         <option value="">Select a topic</option>
                         <option value="digital-basics">Digital Basics</option>
                         <option value="artificial-intelligence">Artificial Intelligence</option>
-                        <option value="online-safety">Online Safety</option>
+                        <option value="cybersecurity">Cybersecurity</option>
                         <option value="programming">Programming</option>
+                        <option value="networking">Networking</option>
                     </select>
                 </div>
 
@@ -185,20 +124,40 @@
                     <select id="languageSelect" class="matching-select">
                         <option value="">Select a language</option>
                         <option value="English">English</option>
-                        <option value="Spanish">Spanish</option>
-                        <option value="Hindi">Hindi</option>
                         <option value="Arabic">Arabic</option>
+                        <option value="French">French</option>
                     </select>
                 </div>
 
-                <button id="findMyMentor" class="matching-button">Find My Mentor</button>
+                <div class="form-group">
+                    <label for="descriptionSelect">Describe what you want to learn (optional)</label>
+                    <textarea id="descriptionSelect" class="matching-select" rows="3" placeholder="Briefly describe your learning goals..."></textarea>
+                </div>
+
+                <button type="button" id="findMyMentor" class="matching-button">Search</button>
+            </div>
+
+            <div class="demo-notice">
+                <strong>📌 Demo Mode:</strong> These are fictional mentor profiles for demonstration purposes.
+                Messages are stored only for this demo and no real mentor is contacted.
             </div>
 
             <!-- Matching Results -->
             <div id="matchingResults" class="matching-results">
                 <div class="matching-placeholder">
-                    Fill in the form above and click "Find My Mentor" to get personalized recommendations.
+                    Fill in the form above and click "Search" to get personalized recommendations.
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Meet Our Mentors Section -->
+    <section class="meet-mentors-section">
+        <div class="container">
+            <h2 class="section-title">Meet Our Mentors</h2>
+            <p class="section-subtitle">Browse our team of fictional demo mentors. These profiles are for demonstration purposes only.</p>
+            <div class="mentors-directory-container" id="mentorsDirectoryContainer">
+                <!-- Mentors will be loaded here -->
             </div>
         </div>
     </section>
@@ -256,8 +215,6 @@
                 <div class="footer-links">
                     <a href="#home">Home</a>
                     <a href="#find-mentor">Find a Mentor</a>
-                    <a href="#mentor-matching">Mentor Matching</a>
-                    <a href="#learn">Learn</a>
                     <a href="#about">About</a>
                 </div>
                 <p class="footer-copyright">&copy; 2026 HELP HER. All rights reserved.</p>

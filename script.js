@@ -52,6 +52,11 @@ cardButtons.forEach(button => {
     });
 });
 
+// API Configuration - use deployed backend in production, local for development
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? ''
+    : 'https://help-her-backend.onrender.com';
+
 // Chat Functionality (preserved but UI removed - add null checks to prevent errors)
 const chatInput = document.getElementById('chatInput');
 const sendButton = document.getElementById('sendButton');
@@ -85,7 +90,7 @@ if (chatInput && sendButton && chatMessages) {
         try {
             // Send to backend API
             const apiStartTime = performance.now();
-            const response = await fetch('/api/chat', {
+            const response = await fetch(`${API_BASE_URL}/api/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -264,25 +269,19 @@ document.querySelectorAll('.learning-card').forEach(card => {
     });
 });
 
-// Mentor Discovery Functionality
-const technologyFilter = document.getElementById('technologyFilter');
-const languageFilter = document.getElementById('languageFilter');
-const experienceFilter = document.getElementById('experienceFilter');
-const searchMentorsBtn = document.getElementById('searchMentors');
-const mentorCardsContainer = document.getElementById('mentorCards');
+// Modal elements
 const mentorModal = document.getElementById('mentorModal');
 const modalBody = document.getElementById('modalBody');
 const closeModalBtn = document.querySelector('.close-modal');
 
+// Messaging modal elements
+const messageModal = document.getElementById('messageModal');
+const messageModalBody = document.getElementById('messageModalBody');
+const closeMessageModalBtn = document.getElementById('closeMessageModal');
+
 // Store mentors globally for button access
 let currentMentors = [];
-let matchingMentors = [];
-
-// Load mentors on page load - with null check
-if (searchMentorsBtn && mentorCardsContainer) {
-    loadMentors();
-    searchMentorsBtn.addEventListener('click', loadMentors);
-}
+let selectedMentor = null;
 
 // Close modal - with null checks
 if (closeModalBtn && mentorModal) {
@@ -294,115 +293,136 @@ if (closeModalBtn && mentorModal) {
     });
 }
 
-// Load mentors from API
-async function loadMentors() {
-    if (!mentorCardsContainer) {
-        console.error('Mentor cards container not found');
-        return;
-    }
+// Messaging modal functions
+function showMessageModal(mentor) {
+    selectedMentor = mentor;
+    const initial = mentor.displayName.charAt(0);
 
-    const technology = technologyFilter ? technologyFilter.value : '';
-    const language = languageFilter ? languageFilter.value : '';
-    const experience = experienceFilter ? experienceFilter.value : '';
+    messageModalBody.innerHTML = `
+        <div class="modal-mentor-header">
+            <div class="mentor-avatar" style="width: 60px; height: 60px; font-size: 1.5rem; margin: 0 auto 1rem;">${initial}</div>
+            <h2 class="modal-mentor-name">Send a Message</h2>
+            <p style="color: var(--text-light);">to ${mentor.displayName}</p>
+        </div>
+        <div class="privacy-notice">
+            <strong>📌 Demo Mode:</strong> This is a prototype using fictional mentor profiles. 
+            Your message will be stored temporarily in memory for demonstration purposes. 
+            No real mentor will receive this message.
+        </div>
+        <form class="request-form" id="messageForm">
+            <div class="form-group">
+                <label for="learnerName">Your Name</label>
+                <input type="text" id="learnerName" name="learnerName" required
+                    style="width: 100%; padding: 12px 15px; border: 2px solid var(--light-gold); border-radius: 10px; font-size: 1rem;"
+                    placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+                <label for="messageLanguage">Preferred Language</label>
+                <select id="messageLanguage" name="messageLanguage" required>
+                    <option value="">Select a language</option>
+                    ${mentor.languages.map(lang => `<option value="${lang}">${lang}</option>`).join('')}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="messageText">Your Message</label>
+                <textarea id="messageText" name="messageText" required rows="4"
+                    placeholder="Explain what you need help with and why you're interested in this mentor..."></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="form-cancel-btn" onclick="closeMessageModal()">Cancel</button>
+                <button type="submit" class="form-submit-btn">Send Message</button>
+            </div>
+        </form>
+    `;
 
-    console.log('Loading mentors with filters:', { technology, language, experience });
+    messageModal.classList.add('show');
 
-    // Build query string
-    const params = new URLSearchParams();
-    if (technology) params.append('technologyField', technology);
-    if (language) params.append('language', language);
-    if (experience) params.append('experienceLevel', experience);
+    // Handle form submission
+    const form = document.getElementById('messageForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    mentorCardsContainer.innerHTML = '<div class="loading-mentors">Loading mentors...</div>';
+        const learnerName = document.getElementById('learnerName').value;
+        const language = document.getElementById('messageLanguage').value;
+        const messageText = document.getElementById('messageText').value;
 
-    try {
-        const response = await fetch(`/api/mentors/search?${params.toString()}`);
-        const data = await response.json();
+        // Disable submit button
+        const submitBtn = form.querySelector('.form-submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
 
-        console.log('Mentor API response:', data);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    mentorId: mentor.id || 'demo-mentor',
+                    mentorName: mentor.displayName,
+                    learnerName,
+                    language,
+                    message: messageText
+                })
+            });
 
-        if (data.success && data.mentors.length > 0) {
-            displayMentors(data.mentors);
-        } else {
-            mentorCardsContainer.innerHTML = '<div class="no-mentors">No mentors found matching your criteria. Try adjusting your filters.</div>';
+            const data = await response.json();
+
+            if (data.success) {
+                messageModalBody.innerHTML = `
+                    <div class="modal-mentor-header">
+                        <div class="mentor-avatar" style="width: 60px; height: 60px; font-size: 1.5rem; margin: 0 auto 1rem;">✓</div>
+                        <h2 class="modal-mentor-name">Message Sent!</h2>
+                    </div>
+                    <div class="privacy-notice" style="background-color: #E8F5E9; color: #2E7D32; border-color: #4CAF50;">
+                        <strong>Success!</strong> Your message has been received.
+                    </div>
+                    <div style="padding: 1.5rem; text-align: center; color: var(--text-light);">
+                        <p><strong>⚠️ Demo Notice:</strong></p>
+                        <p>This is a prototype with fictional mentor profiles. Your message has been stored temporarily in memory for demonstration purposes.</p>
+                        <p>No real mentor has been notified. In a production version, mentors would receive real notifications and could respond.</p>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="form-submit-btn" onclick="closeMessageModal()">Close</button>
+                    </div>
+                `;
+            } else {
+                throw new Error(data.error || 'Failed to send message');
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            messageModalBody.innerHTML = `
+                <div class="modal-mentor-header">
+                    <div class="mentor-avatar" style="width: 60px; height: 60px; font-size: 1.5rem; margin: 0 auto 1rem; background-color: #FFEBEE;">✗</div>
+                    <h2 class="modal-mentor-name">Error</h2>
+                </div>
+                <div class="privacy-notice" style="background-color: #FFEBEE; color: #C62828; border-color: #F44336;">
+                    <strong>Error:</strong> Failed to send your message. Please try again.
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="form-submit-btn" onclick="closeMessageModal()">Close</button>
+                </div>
+            `;
         }
-    } catch (error) {
-        console.error('Error loading mentors:', error);
-        mentorCardsContainer.innerHTML = '<div class="no-mentors">Error loading mentors. Please try again.</div>';
-    }
+    });
 }
 
-// Display mentor cards
-function displayMentors(mentors) {
-    console.log('displayMentors called with', mentors.length, 'mentors');
-    currentMentors = mentors; // Store globally
-    mentorCardsContainer.innerHTML = '';
+function closeMessageModal() {
+    messageModal.classList.remove('show');
+    selectedMentor = null;
+}
 
-    mentors.forEach((mentor, index) => {
-        console.log('Creating card for:', mentor.displayName);
-        const card = document.createElement('div');
-        card.className = 'mentor-card';
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = `opacity 0.5s ease ${index * 0.1}s, transform 0.5s ease ${index * 0.1}s`;
+// Make functions available globally
+window.closeMessageModal = closeMessageModal;
+window.showMessageModal = showMessageModal;
 
-        const initial = mentor.displayName.charAt(0);
-
-        card.innerHTML = `
-            <div class="mentor-card-header">
-                <div class="mentor-avatar">${initial}</div>
-                <div class="mentor-name">${mentor.displayName}</div>
-            </div>
-            <div class="mentor-expertise">
-                <h4>Expertise</h4>
-                <div class="mentor-expertise-tags">
-                    ${mentor.expertise.map(exp => `<span class="expertise-tag">${exp}</span>`).join('')}
-                </div>
-            </div>
-            <div class="mentor-languages">
-                <h4>Languages</h4>
-                ${mentor.languages.map(lang => `<span class="language-tag">${lang}</span>`).join('')}
-            </div>
-            <div class="mentor-topics">
-                <h4>Mentoring Topics</h4>
-                <ul>
-                    ${mentor.mentoringTopics.map(topic => `<li>${topic}</li>`).join('')}
-                </ul>
-            </div>
-            <div class="mentor-card-actions">
-                <button class="view-profile-btn" data-mentor-index="${index}">View Profile</button>
-                <button class="request-mentorship-btn" data-mentor-index="${index}">Request Mentorship</button>
-            </div>
-        `;
-
-        mentorCardsContainer.appendChild(card);
-
-        console.log('Card appended for:', mentor.displayName);
-
-        // Trigger animation
-        setTimeout(() => {
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, 50);
-    });
-
-    // Add event listeners to buttons
-    document.querySelectorAll('.view-profile-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const index = parseInt(e.target.dataset.mentorIndex);
-            const mentor = currentMentors[index];
-            console.log('View profile clicked for:', mentor.displayName);
-            showMentorProfile(mentor);
-        });
-    });
-
-    document.querySelectorAll('.request-mentorship-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const index = parseInt(e.target.dataset.mentorIndex);
-            const mentor = currentMentors[index];
-            console.log('Request mentorship clicked for:', mentor.displayName);
-            showRequestForm(mentor);
-        });
+// Close message modal on click outside
+if (closeMessageModalBtn && messageModal) {
+    closeMessageModalBtn.addEventListener('click', closeMessageModal);
+    messageModal.addEventListener('click', (e) => {
+        if (e.target === messageModal) {
+            closeMessageModal();
+        }
     });
 }
 
@@ -441,108 +461,23 @@ function showMentorProfile(mentor) {
         </div>
         <div class="modal-actions">
             <button class="modal-btn modal-btn-secondary" onclick="closeModal()">Close</button>
-            <button class="modal-btn modal-btn-primary" onclick="showRequestForm('${JSON.stringify(mentor).replace(/'/g, "\\'")}')">Request Mentorship</button>
+            <button class="modal-btn modal-btn-primary" id="sendMessageBtn">Send Message</button>
         </div>
     `;
 
     mentorModal.classList.add('show');
+
+    // Add event listener to Send Message button
+    const sendMessageBtn = document.getElementById('sendMessageBtn');
+    if (sendMessageBtn) {
+        sendMessageBtn.addEventListener('click', () => {
+            showMessageModal(mentor);
+        });
+    }
 }
 
 // Make showMentorProfile available globally
 window.showMentorProfile = showMentorProfile;
-
-// Show request form modal
-function showRequestForm(mentor) {
-    const initial = mentor.displayName.charAt(0);
-
-    modalBody.innerHTML = `
-        <div class="modal-mentor-header">
-            <div class="mentor-avatar" style="width: 60px; height: 60px; font-size: 1.5rem; margin: 0 auto 1rem;">${initial}</div>
-            <h2 class="modal-mentor-name">Request Mentorship</h2>
-            <p style="color: var(--text-light);">with ${mentor.displayName}</p>
-        </div>
-        <div class="privacy-notice">
-            <strong>🔒 Privacy Notice:</strong> Your request will be reviewed by the mentor. Contact details will only be shared if the mentor accepts your request. This is a demo - no real message will be sent.
-        </div>
-        <form class="request-form" id="mentorshipRequestForm">
-            <div class="form-group">
-                <label for="learnerName">Your Name</label>
-                <input type="text" id="learnerName" name="learnerName" required
-                    style="width: 100%; padding: 12px 15px; border: 2px solid var(--light-gold); border-radius: 10px; font-size: 1rem;"
-                    placeholder="Enter your name">
-            </div>
-            <div class="form-group">
-                <label for="preferredLanguage">Preferred Language</label>
-                <select id="preferredLanguage" name="preferredLanguage" required>
-                    <option value="">Select a language</option>
-                    ${mentor.languages.map(lang => `<option value="${lang}">${lang}</option>`).join('')}
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="learningGoals">What do you want to learn?</label>
-                <textarea id="learningGoals" name="learningGoals" required
-                    placeholder="Explain what you hope to learn and why you're interested in this mentor..."></textarea>
-            </div>
-            <div class="form-group">
-                <label for="availability">Your availability</label>
-                <textarea id="availability" name="availability"
-                    placeholder="When are you available for mentoring sessions? (e.g., weekends, evenings, etc.)"></textarea>
-            </div>
-            <div class="form-actions">
-                <button type="button" class="form-cancel-btn" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="form-submit-btn">Send Request</button>
-            </div>
-        </form>
-    `;
-
-    mentorModal.classList.add('show');
-
-    // Handle form submission
-    const form = document.getElementById('mentorshipRequestForm');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await submitMentorshipRequest(mentor, form);
-    });
-}
-
-// Submit mentorship request (demo)
-async function submitMentorshipRequest(mentor, form) {
-    const submitBtn = form.querySelector('.form-submit-btn');
-    const cancelBtn = form.querySelector('.form-cancel-btn');
-
-    submitBtn.disabled = true;
-    cancelBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
-
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Show success message (demo)
-    modalBody.innerHTML = `
-        <div class="modal-mentor-header">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
-            <h2 class="modal-mentor-name">Request Submitted!</h2>
-        </div>
-        <div class="form-message success">
-            <strong>Demo Mode:</strong> Your mentorship request has been recorded in this demo.
-            <br><br>
-            In a real system, this request would be sent to ${mentor.displayName} for review.
-            Contact details would only be shared if the mentor accepts your request.
-        </div>
-        <div class="modal-section">
-            <h3>What happens next?</h3>
-            <ul>
-                <li>The mentor will review your request</li>
-                <li>If interested, they will accept your request</li>
-                <li>Contact details will be shared only after consent</li>
-                <li>You can then connect directly with your mentor</li>
-            </ul>
-        </div>
-        <div class="modal-actions">
-            <button class="modal-btn modal-btn-primary" onclick="closeModal()">Close</button>
-        </div>
-    `;
-}
 
 // Close modal
 function closeModal() {
@@ -551,12 +486,12 @@ function closeModal() {
 
 // Make closeModal available globally
 window.closeModal = closeModal;
-window.showRequestForm = showRequestForm;
 
 // Mentor Matching Agent Functionality
 const topicSelect2 = document.getElementById('topicSelect');
 const experienceSelect2 = document.getElementById('experienceSelect');
 const languageSelect2 = document.getElementById('languageSelect');
+const descriptionSelect2 = document.getElementById('descriptionSelect');
 const findMyMentorBtn = document.getElementById('findMyMentor');
 const matchingResults = document.getElementById('matchingResults');
 
@@ -569,7 +504,7 @@ if (topicSelect2 && experienceSelect2 && languageSelect2 && findMyMentorBtn && m
     // Load mentors for matching
     async function loadMentorsForMatching() {
         try {
-            const response = await fetch('/api/mentors/search');
+            const response = await fetch(`${API_BASE_URL}/api/mentors/search`);
             const data = await response.json();
             if (data.success) {
                 allMentorsData = data.mentors;
@@ -579,86 +514,118 @@ if (topicSelect2 && experienceSelect2 && languageSelect2 && findMyMentorBtn && m
         }
     }
 
-    // Topic to expertise mapping
     const topicExpertiseMap = {
-        'digital-basics': ['Web Development', 'Python', 'HTML/CSS', 'JavaScript'],
-        'artificial-intelligence': ['Artificial Intelligence', 'Machine Learning', 'TensorFlow', 'Python'],
-        'online-safety': ['Cybersecurity', 'Network Security', 'Ethical Hacking'],
-        'programming': ['Python', 'JavaScript', 'Web Development', 'Mobile Development', 'iOS', 'Swift']
+        'digital-basics': ['web development', 'html', 'css', 'javascript', 'python'],
+        'artificial-intelligence': ['artificial intelligence', 'machine learning', 'tensorflow', 'python', 'neural'],
+        'cybersecurity': ['cybersecurity', 'network security', 'ethical hacking', 'secure coding', 'security'],
+        'programming': ['python', 'javascript', 'web development', 'mobile development', 'ios', 'swift', 'html'],
+        'networking': ['network', 'networking', 'cloud', 'network security']
     };
 
-    // Score mentors based on user preferences
-    function scoreMentors(topic, experience, language) {
+    const topicLabels = {
+        'digital-basics': 'Digital Basics',
+        'artificial-intelligence': 'Artificial Intelligence',
+        'cybersecurity': 'Cybersecurity',
+        'programming': 'Programming',
+        'networking': 'Networking'
+    };
+
+    function mentorSearchText(mentor) {
+        return [
+            ...(mentor.expertise || []),
+            ...(mentor.mentoringTopics || [])
+        ].join(' ').toLowerCase();
+    }
+
+    function countKeywordHits(text, keywords) {
+        return keywords.filter(keyword => text.includes(keyword)).length;
+    }
+
+    function scoreMentors(topic, experience, language, description) {
         const expertiseKeywords = topicExpertiseMap[topic] || [];
-        
+        const topicLabel = topicLabels[topic] || topic;
+        const descriptionWords = (description || '')
+            .toLowerCase()
+            .split(/[^a-zA-Z\u0600-\u06FF]+/)
+            .filter(word => word.length > 3);
+        const hasDescription = descriptionWords.length > 0;
+        const maxScore = 45 + 35 + 20 + (hasDescription ? 10 : 0);
+
         return allMentorsData.map(mentor => {
             let score = 0;
-            let reasons = [];
+            const reasons = [];
+            const haystack = mentorSearchText(mentor);
+            const topicHits = countKeywordHits(haystack, expertiseKeywords);
+            const topicMatch = topicHits > 0;
 
-            // Check expertise match
-            let expertiseMatch = false;
-            mentor.expertise.forEach(exp => {
-                expertiseKeywords.forEach(keyword => {
-                    if (exp.toLowerCase().includes(keyword.toLowerCase())) {
-                        expertiseMatch = true;
-                    }
-                });
-            });
-
-            if (expertiseMatch) {
-                score += 3;
-                reasons.push('Expertise matches your topic');
+            if (topicMatch) {
+                score += 45;
+                reasons.push(`Expertise matches ${topicLabel}`);
             }
 
-            // Check language match
-            if (language && mentor.languages.includes(language)) {
-                score += 2;
-                reasons.push('Speaks your preferred language');
+            const languageMatch = language && (mentor.languages || []).includes(language);
+            if (languageMatch) {
+                score += 35;
+                reasons.push(`Speaks ${language}`);
             }
 
-            // Check experience level match
             if (experience) {
-                if (experience === 'beginner' && mentor.mentoringTopics.some(t => t.toLowerCase().includes('basic') || t.toLowerCase().includes('fundamental'))) {
-                    score += 1;
-                    reasons.push('Suitable for beginners');
-                } else if (experience === 'intermediate' && (mentor.experienceLevel === 'intermediate' || mentor.experienceLevel === 'senior')) {
-                    score += 1;
-                    reasons.push('Suitable experience level');
+                const beginnerFriendly = (mentor.mentoringTopics || []).some(t =>
+                    /basic|fundamental|beginner/i.test(t)
+                );
+                const mentorLevel = mentor.experienceLevel || '';
+
+                if (experience === 'beginner' && (beginnerFriendly || mentorLevel === 'beginner' || mentorLevel === 'intermediate')) {
+                    score += 20;
+                    reasons.push('Good fit for a beginner');
+                } else if (experience === 'intermediate' && (mentorLevel === 'intermediate' || mentorLevel === 'senior')) {
+                    score += 20;
+                    reasons.push('Experience level matches your goals');
                 }
             }
+
+            if (hasDescription) {
+                const descriptionHits = descriptionWords.filter(word => haystack.includes(word)).length;
+                if (descriptionHits > 0) {
+                    const descriptionPoints = Math.min(10, descriptionHits * 4);
+                    score += descriptionPoints;
+                    reasons.push('Matches details in your description');
+                }
+            }
+
+            const percent = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
 
             return {
                 mentor,
                 score,
-                reasons
+                percent,
+                reasons,
+                topicMatch,
+                languageMatch: Boolean(languageMatch)
             };
         });
     }
 
-    // Find best mentors
-    function findBestMentors(topic, experience, language) {
-        const scoredMentors = scoreMentors(topic, experience, language);
-        
-        // Filter out mentors with score 0 (no match)
-        const matchedMentors = scoredMentors.filter(m => m.score > 0);
-        
-        // Sort by score (highest first)
-        matchedMentors.sort((a, b) => b.score - a.score);
-        
-        // Return top 3
-        return matchedMentors.slice(0, 3);
+    function findBestMentors(topic, experience, language, description) {
+        return scoreMentors(topic, experience, language, description)
+            .filter(match => match.score > 0 && (match.topicMatch || match.languageMatch))
+            .sort((a, b) => {
+                if (b.percent !== a.percent) return b.percent - a.percent;
+                if (Number(b.topicMatch) !== Number(a.topicMatch)) return Number(b.topicMatch) - Number(a.topicMatch);
+                return b.score - a.score;
+            })
+            .slice(0, 2);
     }
 
-    // Display matching results
     function displayMatchingResults(matchedMentors) {
-        matchingMentors = matchedMentors; // Store globally
+        matchingMentors = matchedMentors;
 
         if (matchedMentors.length === 0) {
             matchingResults.innerHTML = `
                 <div class="no-match-message">
                     <strong>No mentors found</strong>
                     Unfortunately, we don't currently have mentors who match your specific criteria.
-                    Try adjusting your preferences or browse all mentors in the "Find a Mentor" section.
+                    Try adjusting your preferences or browse all mentors in the "Meet Our Mentors" section.
                 </div>
             `;
             return;
@@ -672,36 +639,42 @@ if (topicSelect2 && experienceSelect2 && languageSelect2 && findMyMentorBtn && m
                         <div class="matching-result-avatar">${initial}</div>
                         <div>
                             <div class="matching-result-name">${match.mentor.displayName}</div>
-                        <div class="matching-result-score">Match Score: ${match.score}/6</div>
+                            <div class="matching-result-score">Compatibility: ${match.percent}%</div>
+                        </div>
+                    </div>
+                    <div class="matching-result-explanation">
+                        <strong>Why this mentor:</strong> ${match.reasons.join('. ')}.
+                    </div>
+                    <div class="matching-result-actions">
+                        <button class="matching-view-btn" data-matching-index="${index}">
+                            View Profile
+                        </button>
+                        <button class="matching-view-btn" data-message-index="${index}" style="background-color: var(--deep-rose);">
+                            Send Message
+                        </button>
                     </div>
                 </div>
-                <div class="matching-result-explanation">
-                    <strong>Why this mentor:</strong> ${match.reasons.join(', ')}.
-                </div>
-                <div class="matching-result-actions">
-                    <button class="matching-view-btn" data-matching-index="${index}">
-                        View Profile
-                    </button>
-                </div>
-            </div>
-        `;
-    }).join('');
+            `;
+        }).join('');
 
-        // Add event listeners to buttons
-        document.querySelectorAll('.matching-view-btn').forEach(btn => {
+        document.querySelectorAll('#matchingResults .matching-view-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const index = parseInt(e.target.dataset.matchingIndex);
-                const mentor = matchingMentors[index].mentor;
-                showMentorProfile(mentor);
+                if (e.target.dataset.matchingIndex !== undefined) {
+                    const index = parseInt(e.target.dataset.matchingIndex, 10);
+                    showMentorProfile(matchingMentors[index].mentor);
+                } else if (e.target.dataset.messageIndex !== undefined) {
+                    const index = parseInt(e.target.dataset.messageIndex, 10);
+                    showMessageModal(matchingMentors[index].mentor);
+                }
             });
         });
     }
 
-    // Find mentor button click
     findMyMentorBtn.addEventListener('click', async () => {
         const topic = topicSelect2.value;
         const experience = experienceSelect2.value;
         const language = languageSelect2.value;
+        const description = descriptionSelect2 ? descriptionSelect2.value.trim() : '';
 
         if (!topic || !experience || !language) {
             matchingResults.innerHTML = `
@@ -715,59 +688,104 @@ if (topicSelect2 && experienceSelect2 && languageSelect2 && findMyMentorBtn && m
 
         matchingResults.innerHTML = '<div class="loading-matching">Finding your perfect mentor...</div>';
 
-        // Load mentors if not already loaded
         if (allMentorsData.length === 0) {
             await loadMentorsForMatching();
         }
 
-        const matchedMentors = findBestMentors(topic, experience, language);
-        displayMatchingResults(matchedMentors);
+        displayMatchingResults(findBestMentors(topic, experience, language, description));
     });
 
-    // Load mentors for matching on page load
     loadMentorsForMatching();
 }
 
-console.log('HELP HER website loaded successfully!');
-    document.querySelectorAll('.matching-view-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const index = parseInt(e.target.dataset.matchingIndex);
-            const mentor = matchingMentors[index].mentor;
-            showMentorProfile(mentor);
-        });
-    });
-}
+// Load and display all mentors in the "Meet Our Mentors" directory
+const mentorsDirectoryContainer = document.getElementById('mentorsDirectoryContainer');
 
-// Find mentor button click
-if (findMyMentorBtn) {
-    findMyMentorBtn.addEventListener('click', async () => {
-        const topic = topicSelect.value;
-        const experience = experienceSelect.value;
-        const language = languageSelect.value;
+if (mentorsDirectoryContainer) {
+    async function loadMentorsDirectory() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/mentors/search`);
+            const data = await response.json();
+            if (data.success && data.mentors.length > 0) {
+                displayMentorsDirectory(data.mentors);
+            }
+        } catch (error) {
+            console.error('Error loading mentors directory:', error);
+            mentorsDirectoryContainer.innerHTML = '<div class="no-mentors">Error loading mentors.</div>';
+        }
+    }
 
-        if (!topic || !experience || !language) {
-            matchingResults.innerHTML = `
-                <div class="no-match-message">
-                    <strong>Please fill in all fields</strong>
-                    Select a topic, experience level, and language to find your mentor.
+    function displayMentorsDirectory(mentors) {
+        mentorsDirectoryContainer.innerHTML = '';
+
+        mentors.forEach((mentor, index) => {
+            const card = document.createElement('div');
+            card.className = 'mentor-card';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = `opacity 0.5s ease ${index * 0.1}s, transform 0.5s ease ${index * 0.1}s`;
+
+            const initial = mentor.displayName.charAt(0);
+
+            card.innerHTML = `
+                <div class="mentor-card-header">
+                    <div class="mentor-avatar">${initial}</div>
+                    <div class="mentor-name">${mentor.displayName}</div>
+                </div>
+                <div class="mentor-expertise">
+                    <h4>Expertise</h4>
+                    <div class="mentor-expertise-tags">
+                        ${mentor.expertise.map(exp => `<span class="expertise-tag">${exp}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="mentor-languages">
+                    <h4>Languages</h4>
+                    ${mentor.languages.map(lang => `<span class="language-tag">${lang}</span>`).join('')}
+                </div>
+                <div class="mentor-topics">
+                    <h4>Mentoring Topics</h4>
+                    <ul>
+                        ${mentor.mentoringTopics.map(topic => `<li>${topic}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="mentor-card-actions">
+                    <button class="view-profile-btn" data-mentor-index="${index}">View Profile</button>
+                    <button class="request-mentorship-btn" data-mentor-index="${index}">Send Message</button>
                 </div>
             `;
-            return;
-        }
 
-        matchingResults.innerHTML = '<div class="loading-matching">Finding your perfect mentor...</div>';
+            mentorsDirectoryContainer.appendChild(card);
 
-        // Load mentors if not already loaded
-        if (allMentorsData.length === 0) {
-            await loadMentorsForMatching();
-        }
+            // Trigger animation
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 50);
+        });
 
-        const matchedMentors = findBestMentors(topic, experience, language);
-        displayMatchingResults(matchedMentors);
-    });
+        // Store mentors globally for button access
+        currentMentors = mentors;
+
+        // Add event listeners to buttons
+        document.querySelectorAll('.view-profile-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt(e.target.dataset.mentorIndex);
+                const mentor = currentMentors[index];
+                showMentorProfile(mentor);
+            });
+        });
+
+        document.querySelectorAll('.request-mentorship-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt(e.target.dataset.mentorIndex);
+                const mentor = currentMentors[index];
+                showMessageModal(mentor);
+            });
+        });
+    }
+
+    // Load mentors directory on page load
+    loadMentorsDirectory();
 }
-
-// Load mentors for matching on page load
-loadMentorsForMatching();
 
 console.log('HELP HER website loaded successfully!');
